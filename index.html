@@ -1,0 +1,1466 @@
+<!DOCTYPE html>
+<html lang="tr" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>Kiev Su Pro</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+/* ═══════════════════════════════════════════════════
+   THEME TOKENS
+═══════════════════════════════════════════════════ */
+:root {
+  --r: 14px; --r-lg: 20px; --r-xl: 28px;
+  --shadow: 0 4px 24px rgba(0,0,0,.12);
+  --shadow-lg: 0 8px 40px rgba(0,0,0,.18);
+  --trans: .22s cubic-bezier(.4,0,.2,1);
+
+  /* Brand */
+  --brand:       #0ea5e9;
+  --brand-2:     #6366f1;
+  --brand-light: #38bdf8;
+  --green:  #10b981;
+  --red:    #ef4444;
+  --orange: #f59e0b;
+  --purple: #8b5cf6;
+  --cyan:   #06b6d4;
+}
+
+[data-theme="dark"] {
+  --bg:       #0b0f1a;
+  --bg2:      #111827;
+  --bg3:      #1a2236;
+  --bg4:      #1f2d3d;
+  --border:   rgba(148,163,184,.1);
+  --border2:  rgba(148,163,184,.18);
+  --text:     #f1f5f9;
+  --text2:    #94a3b8;
+  --text3:    #64748b;
+  --card-bg:  #131c2e;
+  --nav-bg:   #0d1424;
+  --topbar:   #0d1424;
+  --input-bg: #1a2236;
+  --hover:    rgba(14,165,233,.07);
+  --active:   rgba(14,165,233,.14);
+  --chart-grid: rgba(148,163,184,.06);
+  --chart-tick: #475569;
+}
+
+[data-theme="light"] {
+  --bg:       #f0f4f8;
+  --bg2:      #ffffff;
+  --bg3:      #f8fafc;
+  --bg4:      #eef2f7;
+  --border:   rgba(0,0,0,.07);
+  --border2:  rgba(0,0,0,.12);
+  --text:     #0f172a;
+  --text2:    #475569;
+  --text3:    #94a3b8;
+  --card-bg:  #ffffff;
+  --nav-bg:   #ffffff;
+  --topbar:   #ffffff;
+  --input-bg: #f1f5f9;
+  --hover:    rgba(14,165,233,.06);
+  --active:   rgba(14,165,233,.12);
+  --chart-grid: rgba(0,0,0,.05);
+  --chart-tick: #94a3b8;
+}
+
+/* ═══════════════════════════════════════════════════
+   RESET & BASE
+═══════════════════════════════════════════════════ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { -webkit-tap-highlight-color: transparent; }
+body {
+  font-family: 'Outfit', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  font-size: 15px;
+  transition: background var(--trans), color var(--trans);
+  overflow-x: hidden;
+}
+
+/* Noise texture overlay */
+body::before {
+  content: '';
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.025'/%3E%3C/svg%3E");
+  opacity: .4;
+}
+
+/* ═══════════════════════════════════════════════════
+   LAYOUT
+═══════════════════════════════════════════════════ */
+.app-shell { display: flex; min-height: 100vh; position: relative; z-index: 1; }
+
+/* ═══════════════════════════════════════════════════
+   SIDEBAR
+═══════════════════════════════════════════════════ */
+.sidebar {
+  width: 72px;
+  background: var(--nav-bg);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px 0;
+  position: fixed;
+  top: 0; left: 0; bottom: 0;
+  z-index: 200;
+  transition: width var(--trans), background var(--trans);
+  overflow: hidden;
+}
+.sidebar:hover, .sidebar.expanded {
+  width: 220px;
+  box-shadow: var(--shadow-lg);
+}
+.sidebar .logo {
+  width: 44px; height: 44px;
+  background: linear-gradient(135deg, var(--brand), var(--brand-2));
+  border-radius: 14px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; color: #fff;
+  flex-shrink: 0;
+  box-shadow: 0 0 24px rgba(14,165,233,.35);
+  margin-bottom: 28px;
+  transition: transform var(--trans);
+}
+.sidebar:hover .logo { transform: scale(1.05); }
+.sidebar .logo-text {
+  font-size: 14px; font-weight: 800;
+  white-space: nowrap; opacity: 0;
+  margin-left: 12px; color: var(--text);
+  transition: opacity var(--trans);
+}
+.sidebar:hover .logo-text, .sidebar.expanded .logo-text { opacity: 1; }
+.logo-row { display: flex; align-items: center; width: 100%; padding: 0 14px; }
+
+.nav-items { flex: 1; width: 100%; padding: 0 10px; display: flex; flex-direction: column; gap: 4px; }
+.nav-item {
+  display: flex; align-items: center;
+  gap: 14px;
+  padding: 12px 10px;
+  border-radius: 12px;
+  border: none; background: transparent;
+  color: var(--text2); cursor: pointer;
+  font-family: 'Outfit', sans-serif;
+  font-size: 14px; font-weight: 500;
+  width: 100%; text-align: left;
+  transition: background var(--trans), color var(--trans);
+  position: relative;
+  white-space: nowrap;
+  overflow: hidden;
+}
+.nav-item .ni-icon {
+  width: 36px; height: 36px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px; flex-shrink: 0;
+  background: var(--bg3);
+  transition: background var(--trans), color var(--trans);
+}
+.nav-item .ni-label { opacity: 0; transition: opacity var(--trans); }
+.sidebar:hover .ni-label, .sidebar.expanded .ni-label { opacity: 1; }
+.nav-item:hover { background: var(--hover); color: var(--text); }
+.nav-item.active { background: var(--active); color: var(--brand); }
+.nav-item.active .ni-icon { background: rgba(14,165,233,.18); color: var(--brand); }
+.nav-item .ni-badge {
+  position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
+  background: var(--red); color: #fff;
+  font-size: 10px; font-weight: 700;
+  padding: 2px 6px; border-radius: 999px;
+  opacity: 0; transition: opacity var(--trans);
+}
+.sidebar:hover .ni-badge, .sidebar.expanded .ni-badge { opacity: 1; }
+
+.sidebar-footer { padding: 10px; width: 100%; display: flex; flex-direction: column; gap: 4px; }
+.theme-btn {
+  display: flex; align-items: center; gap: 14px;
+  padding: 10px;
+  border-radius: 12px; border: none;
+  background: transparent; color: var(--text2);
+  cursor: pointer; font-size: 14px; font-family: 'Outfit', sans-serif;
+  width: 100%; transition: background var(--trans), color var(--trans);
+  white-space: nowrap; overflow: hidden;
+}
+.theme-btn .tb-icon {
+  width: 36px; height: 36px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px; background: var(--bg3); flex-shrink: 0;
+}
+.theme-btn:hover { background: var(--hover); color: var(--text); }
+.theme-btn .tb-label { opacity: 0; transition: opacity var(--trans); }
+.sidebar:hover .tb-label, .sidebar.expanded .tb-label { opacity: 1; }
+
+/* ═══════════════════════════════════════════════════
+   MAIN AREA
+═══════════════════════════════════════════════════ */
+.main-area {
+  margin-left: 72px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  min-width: 0;
+}
+
+/* TOP BAR */
+.topbar {
+  background: var(--topbar);
+  border-bottom: 1px solid var(--border);
+  padding: 0 24px;
+  height: 64px;
+  display: flex; align-items: center; justify-content: space-between;
+  position: sticky; top: 0; z-index: 100;
+  transition: background var(--trans);
+}
+.topbar-left h1 {
+  font-size: 20px; font-weight: 800; color: var(--text);
+  line-height: 1.2;
+}
+.topbar-left p { font-size: 12px; color: var(--text2); margin-top: 1px; }
+.topbar-right { display: flex; align-items: center; gap: 10px; }
+
+#live-time {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px; color: var(--brand);
+  background: var(--active);
+  padding: 6px 12px; border-radius: 8px;
+}
+
+/* CONTENT */
+.content { padding: 24px; flex: 1; }
+
+/* ═══════════════════════════════════════════════════
+   CARDS & SURFACES
+═══════════════════════════════════════════════════ */
+.card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: 20px;
+  transition: background var(--trans), border-color var(--trans);
+}
+.card-sm { padding: 16px; }
+.card-title {
+  font-size: 11px; font-weight: 700;
+  letter-spacing: .1em; text-transform: uppercase;
+  color: var(--text3); margin-bottom: 14px;
+  display: flex; align-items: center; gap: 6px;
+}
+
+/* ═══════════════════════════════════════════════════
+   STAT CARDS
+═══════════════════════════════════════════════════ */
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 20px;
+}
+.stat-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: 20px;
+  position: relative; overflow: hidden;
+  transition: transform var(--trans), box-shadow var(--trans), background var(--trans);
+  cursor: default;
+}
+.stat-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); }
+.stat-card::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  border-radius: var(--r-lg) var(--r-lg) 0 0;
+}
+.sc-green::before  { background: linear-gradient(90deg,var(--green),transparent); }
+.sc-blue::before   { background: linear-gradient(90deg,var(--brand),transparent); }
+.sc-cyan::before   { background: linear-gradient(90deg,var(--cyan),transparent); }
+.sc-orange::before { background: linear-gradient(90deg,var(--orange),transparent); }
+.sc-purple::before { background: linear-gradient(90deg,var(--purple),transparent); }
+.sc-red::before    { background: linear-gradient(90deg,var(--red),transparent); }
+
+.stat-icon-bg {
+  width: 44px; height: 44px; border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; margin-bottom: 14px;
+}
+.sc-green .stat-icon-bg  { background: rgba(16,185,129,.12); color: var(--green); }
+.sc-blue .stat-icon-bg   { background: rgba(14,165,233,.12); color: var(--brand); }
+.sc-cyan .stat-icon-bg   { background: rgba(6,182,212,.12); color: var(--cyan); }
+.sc-orange .stat-icon-bg { background: rgba(245,158,11,.12); color: var(--orange); }
+.sc-purple .stat-icon-bg { background: rgba(139,92,246,.12); color: var(--purple); }
+.sc-red .stat-icon-bg    { background: rgba(239,68,68,.12); color: var(--red); }
+
+.stat-label { font-size: 12px; color: var(--text2); font-weight: 500; margin-bottom: 4px; }
+.stat-val {
+  font-size: 26px; font-weight: 900;
+  font-family: 'JetBrains Mono', monospace;
+  line-height: 1.1;
+}
+.sc-green .stat-val  { color: var(--green); }
+.sc-blue .stat-val   { color: var(--brand); }
+.sc-cyan .stat-val   { color: var(--cyan); }
+.sc-orange .stat-val { color: var(--orange); }
+.sc-purple .stat-val { color: var(--purple); }
+.sc-red .stat-val    { color: var(--red); }
+.stat-sub { font-size: 11px; color: var(--text3); margin-top: 4px; }
+
+/* TREND INDICATOR */
+.trend { display: inline-flex; align-items: center; gap: 3px; font-size: 11px; font-weight: 600; padding: 2px 7px; border-radius: 999px; margin-top: 6px; }
+.trend-up { background: rgba(16,185,129,.12); color: var(--green); }
+.trend-dn { background: rgba(239,68,68,.12); color: var(--red); }
+.trend-nt { background: rgba(148,163,184,.1); color: var(--text3); }
+
+/* ═══════════════════════════════════════════════════
+   GRIDS
+═══════════════════════════════════════════════════ */
+.g2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.g3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+.g4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 16px; }
+
+/* ═══════════════════════════════════════════════════
+   PERIOD TABS (Günlük/Haftalık/Aylık)
+═══════════════════════════════════════════════════ */
+.period-tabs {
+  display: inline-flex; gap: 0;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 4px;
+  margin-bottom: 20px;
+}
+.ptab {
+  padding: 8px 18px;
+  border-radius: 9px; border: none;
+  background: transparent; color: var(--text2);
+  font-family: 'Outfit', sans-serif;
+  font-size: 13px; font-weight: 600;
+  cursor: pointer; transition: all var(--trans);
+}
+.ptab.active {
+  background: var(--brand);
+  color: #fff;
+  box-shadow: 0 2px 12px rgba(14,165,233,.4);
+}
+
+/* ═══════════════════════════════════════════════════
+   FORMS
+═══════════════════════════════════════════════════ */
+.form-group { margin-bottom: 16px; }
+.form-label {
+  display: block; font-size: 11px; font-weight: 700;
+  letter-spacing: .08em; text-transform: uppercase;
+  color: var(--text2); margin-bottom: 8px;
+}
+.form-input {
+  width: 100%; background: var(--input-bg);
+  border: 1.5px solid var(--border);
+  border-radius: var(--r); padding: 12px 16px;
+  font-family: 'Outfit', sans-serif;
+  font-size: 14px; color: var(--text);
+  outline: none; transition: border-color var(--trans), box-shadow var(--trans), background var(--trans);
+}
+.form-input:focus {
+  border-color: var(--brand);
+  box-shadow: 0 0 0 3px rgba(14,165,233,.15);
+}
+.form-input::placeholder { color: var(--text3); }
+select.form-input { cursor: pointer; }
+
+/* INPUT ROW */
+.inp-row { display: flex; gap: 10px; }
+.inp-row .form-input { flex: 1; }
+
+/* ═══════════════════════════════════════════════════
+   BUTTONS
+═══════════════════════════════════════════════════ */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 12px 20px; border: none; border-radius: var(--r);
+  font-family: 'Outfit', sans-serif; font-size: 14px; font-weight: 700;
+  cursor: pointer; transition: all var(--trans); white-space: nowrap;
+  letter-spacing: .01em;
+}
+.btn-primary {
+  background: linear-gradient(135deg, var(--brand), var(--brand-2));
+  color: #fff;
+  box-shadow: 0 4px 18px rgba(14,165,233,.35);
+}
+.btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 24px rgba(14,165,233,.45); opacity: .93; }
+.btn-primary:active { transform: translateY(0); }
+.btn-green { background: rgba(16,185,129,.15); color: var(--green); border: 1.5px solid rgba(16,185,129,.3); }
+.btn-green:hover { background: rgba(16,185,129,.25); }
+.btn-red { background: rgba(239,68,68,.12); color: var(--red); border: 1.5px solid rgba(239,68,68,.3); }
+.btn-red:hover { background: rgba(239,68,68,.22); }
+.btn-ghost { background: var(--bg3); color: var(--text2); border: 1.5px solid var(--border2); }
+.btn-ghost:hover { color: var(--text); border-color: var(--brand); }
+.btn-orange { background: rgba(245,158,11,.12); color: var(--orange); border: 1.5px solid rgba(245,158,11,.3); }
+.btn-orange:hover { background: rgba(245,158,11,.22); }
+.btn-sm { padding: 8px 14px; font-size: 13px; border-radius: 10px; }
+.btn-xs { padding: 5px 10px; font-size: 11px; border-radius: 7px; }
+.btn-full { width: 100%; padding: 15px; font-size: 15px; }
+.btn-icon { width: 38px; height: 38px; padding: 0; border-radius: 10px; font-size: 15px; }
+
+/* ═══════════════════════════════════════════════════
+   SALE FORM — BOTTLE SELECTOR
+═══════════════════════════════════════════════════ */
+.bottle-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 12px 0; }
+.bottle-opt {
+  background: var(--input-bg);
+  border: 2px solid var(--border);
+  border-radius: 16px; padding: 16px;
+  cursor: pointer; transition: all var(--trans);
+  position: relative; text-align: center;
+}
+.bottle-opt:hover { border-color: rgba(14,165,233,.4); background: var(--hover); }
+.bottle-opt.sel { border-color: var(--brand); background: rgba(14,165,233,.08); }
+.bottle-opt .bo-emoji { font-size: 32px; margin-bottom: 8px; display: block; }
+.bottle-opt .bo-name { font-size: 14px; font-weight: 700; color: var(--text); }
+.bottle-opt .bo-price { font-size: 12px; color: var(--text2); margin-top: 2px; }
+.bottle-opt .bo-stock { font-size: 11px; color: var(--text3); margin-top: 4px; }
+.bottle-opt .bo-check {
+  position: absolute; top: 10px; right: 10px;
+  width: 22px; height: 22px; border-radius: 50%;
+  border: 2px solid var(--border2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; transition: all var(--trans);
+}
+.bottle-opt.sel .bo-check { background: var(--brand); border-color: var(--brand); color: #fff; }
+.bottle-opt input { display: none; }
+
+/* PAYMENT SELECTOR */
+.pay-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 12px 0; }
+.pay-opt {
+  background: var(--input-bg);
+  border: 2px solid var(--border);
+  border-radius: 14px; padding: 14px 16px;
+  cursor: pointer; transition: all var(--trans);
+  display: flex; align-items: center; gap: 12px;
+}
+.pay-opt:hover { border-color: rgba(14,165,233,.4); }
+.pay-opt.sel-cash { border-color: var(--green); background: rgba(16,185,129,.07); }
+.pay-opt.sel-card { border-color: var(--purple); background: rgba(139,92,246,.07); }
+.pay-icon { width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 17px; flex-shrink: 0; }
+.pay-icon.cash { background: rgba(16,185,129,.12); color: var(--green); }
+.pay-icon.card { background: rgba(139,92,246,.12); color: var(--purple); }
+.pay-label { font-size: 14px; font-weight: 700; color: var(--text); }
+.pay-sub { font-size: 11px; color: var(--text3); }
+
+/* SALE SUMMARY BOX */
+.sale-summary {
+  background: linear-gradient(135deg, rgba(14,165,233,.08), rgba(99,102,241,.08));
+  border: 1.5px solid rgba(14,165,233,.2);
+  border-radius: 18px; padding: 20px;
+  margin: 16px 0;
+}
+.ss-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 7px 0; font-size: 14px; color: var(--text2);
+  border-bottom: 1px dashed var(--border);
+}
+.ss-row:last-child { border-bottom: none; }
+.ss-total-row {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-top: 14px; padding-top: 14px;
+  border-top: 2px solid rgba(14,165,233,.2);
+}
+.ss-total-label { font-size: 15px; font-weight: 800; color: var(--text); }
+.ss-total-val {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 34px; font-weight: 700; color: var(--brand);
+  text-shadow: 0 0 20px rgba(14,165,233,.3);
+}
+
+/* ═══════════════════════════════════════════════════
+   TABLES
+═══════════════════════════════════════════════════ */
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+thead tr { border-bottom: 2px solid var(--border); }
+th {
+  font-size: 10px; font-weight: 800;
+  letter-spacing: .12em; text-transform: uppercase;
+  color: var(--text3); padding: 0 14px 12px;
+  text-align: left; white-space: nowrap;
+}
+th:first-child { padding-left: 0; }
+th:last-child { padding-right: 0; text-align: right; }
+td {
+  padding: 13px 14px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle; color: var(--text);
+}
+td:first-child { padding-left: 0; }
+td:last-child { padding-right: 0; text-align: right; }
+tbody tr { transition: background var(--trans); }
+tbody tr:hover { background: var(--hover); }
+tbody tr:last-child td { border-bottom: none; }
+
+/* BADGE */
+.badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 3px 9px; border-radius: 999px;
+  font-size: 10px; font-weight: 800;
+  letter-spacing: .06em; text-transform: uppercase;
+}
+.b-green  { background: rgba(16,185,129,.12); color: var(--green); }
+.b-red    { background: rgba(239,68,68,.12); color: var(--red); }
+.b-blue   { background: rgba(14,165,233,.12); color: var(--brand); }
+.b-orange { background: rgba(245,158,11,.12); color: var(--orange); }
+.b-purple { background: rgba(139,92,246,.12); color: var(--purple); }
+.b-gray   { background: rgba(148,163,184,.1); color: var(--text3); }
+
+/* ═══════════════════════════════════════════════════
+   CHARTS
+═══════════════════════════════════════════════════ */
+.chart-box { position: relative; }
+.chart-box canvas { border-radius: 8px; }
+
+/* ═══════════════════════════════════════════════════
+   PROGRESS BAR
+═══════════════════════════════════════════════════ */
+.pb-wrap { height: 6px; background: var(--bg4); border-radius: 999px; overflow: hidden; margin-top: 8px; }
+.pb-fill { height: 100%; border-radius: 999px; transition: width .6s ease; }
+
+/* ═══════════════════════════════════════════════════
+   STOCK WIDGET
+═══════════════════════════════════════════════════ */
+.stock-row {
+  display: flex; align-items: center; gap: 14px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--border);
+}
+.stock-row:last-child { border-bottom: none; padding-bottom: 0; }
+.stock-row:first-child { padding-top: 0; }
+.sr-icon { width: 42px; height: 42px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+.sr-info { flex: 1; min-width: 0; }
+.sr-name { font-size: 14px; font-weight: 600; color: var(--text); }
+.sr-sub { font-size: 11px; color: var(--text3); }
+.sr-val { font-family: 'JetBrains Mono', monospace; font-size: 16px; font-weight: 700; text-align: right; flex-shrink: 0; }
+
+/* ═══════════════════════════════════════════════════
+   INNER TABS
+═══════════════════════════════════════════════════ */
+.inner-tabs {
+  display: flex; gap: 4px;
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: 12px; padding: 4px;
+  width: fit-content; margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+.itab {
+  padding: 8px 16px; border-radius: 9px; border: none;
+  background: transparent; color: var(--text2);
+  font-family: 'Outfit', sans-serif;
+  font-size: 13px; font-weight: 600; cursor: pointer;
+  transition: all var(--trans); white-space: nowrap;
+}
+.itab.active { background: var(--card-bg); color: var(--brand); box-shadow: 0 1px 6px rgba(0,0,0,.15); }
+
+/* ═══════════════════════════════════════════════════
+   SECTION VISIBILITY
+═══════════════════════════════════════════════════ */
+.page { display: none; }
+.page.active { display: block; }
+.inner-sec { display: none; }
+.inner-sec.active { display: block; }
+
+/* ═══════════════════════════════════════════════════
+   MODAL
+═══════════════════════════════════════════════════ */
+.modal-bg {
+  position: fixed; inset: 0; z-index: 1000;
+  background: rgba(0,0,0,.6); backdrop-filter: blur(8px);
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; pointer-events: none; transition: opacity var(--trans);
+  padding: 20px;
+}
+.modal-bg.open { opacity: 1; pointer-events: all; }
+.modal {
+  background: var(--card-bg); border: 1px solid var(--border);
+  border-radius: var(--r-xl); padding: 32px;
+  width: 100%; max-width: 420px;
+  transform: scale(.96) translateY(10px);
+  transition: transform var(--trans), background var(--trans);
+  box-shadow: var(--shadow-lg);
+}
+.modal-bg.open .modal { transform: scale(1) translateY(0); }
+.modal-icon { font-size: 36px; margin-bottom: 14px; }
+.modal-title { font-size: 20px; font-weight: 800; color: var(--text); margin-bottom: 8px; }
+.modal-body { font-size: 14px; color: var(--text2); line-height: 1.6; margin-bottom: 24px; }
+.modal-footer { display: flex; gap: 10px; justify-content: flex-end; }
+
+/* ═══════════════════════════════════════════════════
+   TOAST
+═══════════════════════════════════════════════════ */
+#toast-zone { position: fixed; bottom: 24px; right: 24px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; pointer-events: none; }
+.toast {
+  background: var(--card-bg); border: 1px solid var(--border);
+  border-radius: 14px; padding: 14px 18px;
+  display: flex; align-items: center; gap: 12px;
+  font-size: 13px; font-weight: 600; color: var(--text);
+  min-width: 260px; max-width: 340px;
+  box-shadow: 0 8px 36px rgba(0,0,0,.3);
+  animation: tIn .3s ease; pointer-events: auto;
+}
+.toast.out { animation: tOut .3s ease forwards; }
+.toast-ico { font-size: 17px; flex-shrink: 0; }
+.t-success { border-left: 3px solid var(--green); }
+.t-error   { border-left: 3px solid var(--red); }
+.t-info    { border-left: 3px solid var(--brand); }
+.t-warn    { border-left: 3px solid var(--orange); }
+@keyframes tIn  { from { transform: translateX(120%); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes tOut { to { transform: translateX(120%); opacity: 0; } }
+
+/* ═══════════════════════════════════════════════════
+   EMPTY STATE
+═══════════════════════════════════════════════════ */
+.empty { text-align: center; padding: 48px 20px; color: var(--text3); }
+.empty i { font-size: 44px; opacity: .25; margin-bottom: 12px; display: block; }
+.empty p { font-size: 14px; }
+
+/* DANGER ZONE */
+.danger-zone {
+  background: rgba(239,68,68,.04);
+  border: 1.5px solid rgba(239,68,68,.2);
+  border-radius: 16px; padding: 20px;
+}
+.dz-title { font-size: 13px; font-weight: 800; color: var(--red); display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
+.dz-desc { font-size: 12px; color: var(--text3); margin-bottom: 14px; line-height: 1.6; }
+.dz-btns { display: flex; flex-wrap: wrap; gap: 8px; }
+
+/* DIVIDER */
+.divider { height: 1px; background: var(--border); margin: 20px 0; }
+
+/* INFO ROW */
+.info-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 14px; }
+.info-row:last-child { border-bottom: none; }
+.ir-key { color: var(--text2); }
+.ir-val { font-weight: 700; color: var(--text); }
+
+/* SPARKLINE area */
+.mini-chart { height: 60px; }
+
+/* ═══════════════════════════════════════════════════
+   MOBILE / RESPONSIVE
+═══════════════════════════════════════════════════ */
+.mob-nav {
+  display: none;
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 300;
+  background: var(--nav-bg);
+  border-top: 1px solid var(--border);
+  padding: 8px 0 max(8px, env(safe-area-inset-bottom));
+}
+.mob-nav-inner { display: flex; justify-content: space-around; }
+.mob-nav-btn {
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  border: none; background: transparent;
+  color: var(--text3); cursor: pointer;
+  font-family: 'Outfit', sans-serif;
+  font-size: 10px; font-weight: 600;
+  padding: 6px 12px; border-radius: 10px;
+  transition: color var(--trans);
+  min-width: 60px;
+}
+.mob-nav-btn i { font-size: 20px; }
+.mob-nav-btn.active { color: var(--brand); }
+
+@media (max-width: 768px) {
+  .sidebar { display: none; }
+  .main-area { margin-left: 0; padding-bottom: 70px; }
+  .mob-nav { display: block; }
+  .stat-grid { grid-template-columns: 1fr 1fr; }
+  .g2 { grid-template-columns: 1fr; }
+  .g3 { grid-template-columns: 1fr 1fr; }
+  .g4 { grid-template-columns: 1fr 1fr; }
+  .content { padding: 14px; }
+  .topbar { padding: 0 14px; height: 56px; }
+  .topbar-left h1 { font-size: 17px; }
+  #live-time { display: none; }
+}
+@media (max-width: 480px) {
+  .stat-grid { grid-template-columns: 1fr 1fr; }
+  .g3 { grid-template-columns: 1fr; }
+  .g4 { grid-template-columns: 1fr 1fr; }
+  .stat-val { font-size: 20px; }
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--bg4); border-radius: 99px; }
+
+/* ═══ SALE PAGE MAX WIDTH ═══ */
+.sale-wrap { max-width: 560px; }
+
+/* ═══ REPORT DATE RANGE ═══ */
+.dr-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; }
+.dr-pill {
+  padding: 6px 14px; border-radius: 999px;
+  border: 1.5px solid var(--border2);
+  background: var(--bg3);
+  color: var(--text2); font-size: 13px; font-weight: 600;
+  cursor: pointer; transition: all var(--trans); white-space: nowrap;
+}
+.dr-pill.active { background: var(--brand); color: #fff; border-color: var(--brand); }
+
+/* ═══ LOADING PULSE ═══ */
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+.pulse { animation: pulse 1.5s ease infinite; }
+</style>
+</head>
+<body>
+
+<!-- TOAST ZONE -->
+<div id="toast-zone"></div>
+
+<!-- MODAL -->
+<div class="modal-bg" id="modal-bg">
+  <div class="modal">
+    <div class="modal-icon" id="m-icon">⚠️</div>
+    <div class="modal-title" id="m-title">Onay</div>
+    <div class="modal-body" id="m-body">Bu işlemi onaylıyor musunuz?</div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost btn-sm" onclick="closeModal()">İptal</button>
+      <button class="btn btn-red btn-sm" id="m-confirm">Evet, Devam Et</button>
+    </div>
+  </div>
+</div>
+
+<div class="app-shell">
+
+<!-- ════════════════════════════════════════
+     SIDEBAR (desktop)
+════════════════════════════════════════ -->
+<aside class="sidebar" id="sidebar">
+  <div class="logo-row">
+    <div class="logo"><i class="fa-solid fa-droplet"></i></div>
+    <span class="logo-text">KİEV SU PRO</span>
+  </div>
+
+  <nav class="nav-items">
+    <button class="nav-item active" id="nav-dashboard" onclick="goPage('dashboard')">
+      <span class="ni-icon"><i class="fa-solid fa-chart-line"></i></span>
+      <span class="ni-label">Panel</span>
+    </button>
+    <button class="nav-item" id="nav-sales" onclick="goPage('sales')">
+      <span class="ni-icon"><i class="fa-solid fa-cash-register"></i></span>
+      <span class="ni-label">Satış Yap</span>
+    </button>
+    <button class="nav-item" id="nav-expenses" onclick="goPage('expenses')">
+      <span class="ni-icon"><i class="fa-solid fa-receipt"></i></span>
+      <span class="ni-label">Gider Ekle</span>
+    </button>
+    <button class="nav-item" id="nav-stock" onclick="goPage('stock')">
+      <span class="ni-icon"><i class="fa-solid fa-boxes-stacked"></i></span>
+      <span class="ni-label">Stok Yönetimi</span>
+    </button>
+    <button class="nav-item" id="nav-reports" onclick="goPage('reports')">
+      <span class="ni-icon"><i class="fa-solid fa-chart-bar"></i></span>
+      <span class="ni-label">Raporlar</span>
+    </button>
+    <button class="nav-item" id="nav-settings" onclick="goPage('settings')">
+      <span class="ni-icon"><i class="fa-solid fa-sliders"></i></span>
+      <span class="ni-label">Ayarlar</span>
+    </button>
+  </nav>
+
+  <div class="sidebar-footer">
+    <button class="theme-btn" onclick="toggleTheme()">
+      <span class="tb-icon" id="theme-icon"><i class="fa-solid fa-sun"></i></span>
+      <span class="tb-label" id="theme-label">Açık Tema</span>
+    </button>
+    <div style="padding:8px 10px 0;">
+      <div id="sb-clock" style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text3);"></div>
+    </div>
+  </div>
+</aside>
+
+<!-- ════════════════════════════════════════
+     MAIN AREA
+════════════════════════════════════════ -->
+<div class="main-area">
+
+  <!-- TOP BAR -->
+  <header class="topbar">
+    <div class="topbar-left">
+      <h1 id="page-title">Genel Panel</h1>
+      <p id="page-date">Yükleniyor...</p>
+    </div>
+    <div class="topbar-right">
+      <div id="live-time">--:--:--</div>
+      <button class="btn btn-ghost btn-sm" onclick="toggleTheme()" style="display:none;" id="topbar-theme">
+        <i class="fa-solid fa-circle-half-stroke"></i>
+      </button>
+    </div>
+  </header>
+
+  <!-- CONTENT -->
+  <div class="content">
+
+    <!-- ══════════════════════ DASHBOARD PAGE ══════════════════════ -->
+    <div class="page active" id="page-dashboard">
+
+      <!-- STATS -->
+      <div class="stat-grid" id="stat-grid">
+        <div class="stat-card sc-green">
+          <div class="stat-icon-bg"><i class="fa-solid fa-arrow-trend-up"></i></div>
+          <div class="stat-label">Günlük Kazanç</div>
+          <div class="stat-val" id="st-daily">0 ₴</div>
+          <div class="stat-sub">Bugünkü satışlar</div>
+        </div>
+        <div class="stat-card sc-blue">
+          <div class="stat-icon-bg"><i class="fa-solid fa-vault"></i></div>
+          <div class="stat-label">Kasadaki Para</div>
+          <div class="stat-val" id="st-cash">0 ₴</div>
+          <div class="stat-sub">Net bakiye</div>
+        </div>
+        <div class="stat-card sc-cyan">
+          <div class="stat-icon-bg"><i class="fa-solid fa-droplet"></i></div>
+          <div class="stat-label">Su Stoğu</div>
+          <div class="stat-val" id="st-water">0 L</div>
+          <div class="stat-sub" id="st-water-sub">—</div>
+        </div>
+        <div class="stat-card sc-orange">
+          <div class="stat-icon-bg"><i class="fa-solid fa-bottle-water"></i></div>
+          <div class="stat-label">Şişeler (5L / 10L)</div>
+          <div class="stat-val" id="st-bottles">0 / 0</div>
+          <div class="stat-sub">Boş şişe stoğu</div>
+        </div>
+      </div>
+
+      <!-- PERIOD TABS -->
+      <div class="period-tabs">
+        <button class="ptab active" onclick="setPeriod('day',this)">Günlük</button>
+        <button class="ptab" onclick="setPeriod('week',this)">Haftalık</button>
+        <button class="ptab" onclick="setPeriod('month',this)">Aylık</button>
+        <button class="ptab" onclick="setPeriod('all',this)">Tümü</button>
+      </div>
+
+      <!-- PERIOD STATS -->
+      <div class="g4" style="margin-bottom:20px;" id="period-stats-row">
+        <div class="card card-sm">
+          <div class="card-title"><i class="fa-solid fa-money-bill-wave" style="color:var(--green)"></i> Gelir</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:22px;font-weight:700;color:var(--green);" id="ps-income">0 ₴</div>
+        </div>
+        <div class="card card-sm">
+          <div class="card-title"><i class="fa-solid fa-arrow-down" style="color:var(--red)"></i> Gider</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:22px;font-weight:700;color:var(--red);" id="ps-expense">0 ₴</div>
+        </div>
+        <div class="card card-sm">
+          <div class="card-title"><i class="fa-solid fa-scale-balanced" style="color:var(--brand)"></i> Net Kar</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:22px;font-weight:700;color:var(--brand);" id="ps-profit">0 ₴</div>
+        </div>
+        <div class="card card-sm">
+          <div class="card-title"><i class="fa-solid fa-droplet" style="color:var(--cyan)"></i> Satılan Su</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:22px;font-weight:700;color:var(--cyan);" id="ps-liters">0 L</div>
+        </div>
+      </div>
+
+      <!-- CHARTS ROW -->
+      <div class="g2" style="margin-bottom:20px;">
+        <div class="card">
+          <div class="card-title"><i class="fa-solid fa-chart-line" style="color:var(--brand)"></i> Satış Trendi</div>
+          <div class="chart-box" style="height:200px;"><canvas id="chart-trend"></canvas></div>
+        </div>
+        <div class="card">
+          <div class="card-title"><i class="fa-solid fa-chart-pie" style="color:var(--purple)"></i> Gelir / Gider Dağılımı</div>
+          <div class="chart-box" style="height:200px;"><canvas id="chart-pie"></canvas></div>
+        </div>
+      </div>
+
+      <!-- STOCK + RECENT -->
+      <div class="g2">
+        <div class="card">
+          <div class="card-title"><i class="fa-solid fa-boxes-stacked" style="color:var(--orange)"></i> Stok Durumu</div>
+          <div id="dash-stock-widget"></div>
+        </div>
+        <div class="card">
+          <div class="card-title"><i class="fa-solid fa-clock-rotate-left" style="color:var(--brand-2)"></i> Son İşlemler</div>
+          <div id="recent-empty" class="empty" style="display:none;padding:24px 0;"><i class="fa-regular fa-folder-open"></i><p>Henüz işlem yok</p></div>
+          <div class="table-wrap">
+            <table id="recent-table">
+              <thead><tr><th>Saat</th><th>Açıklama</th><th>Tür</th><th>Tutar</th></tr></thead>
+              <tbody id="recent-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- PAYMENT METHOD CHART -->
+      <div class="g2" style="margin-top:20px;">
+        <div class="card">
+          <div class="card-title"><i class="fa-solid fa-credit-card" style="color:var(--purple)"></i> Ödeme Yöntemi Dağılımı</div>
+          <div class="chart-box" style="height:180px;"><canvas id="chart-payment"></canvas></div>
+        </div>
+        <div class="card">
+          <div class="card-title"><i class="fa-solid fa-chart-column" style="color:var(--cyan)"></i> Günlük Karşılaştırma</div>
+          <div class="chart-box" style="height:180px;"><canvas id="chart-bar"></canvas></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════ SALES PAGE ══════════════════════ -->
+    <div class="page" id="page-sales">
+      <div class="sale-wrap">
+        <div class="card" style="margin-bottom:16px;">
+          <div class="card-title"><i class="fa-solid fa-droplet" style="color:var(--brand)"></i> Su Miktarı</div>
+          <div class="form-group" style="margin-bottom:0;">
+            <input type="number" id="s-liters" class="form-input" placeholder="Kaç litre? (örn: 6)" min="0" oninput="calcSale()">
+          </div>
+        </div>
+
+        <div class="card" style="margin-bottom:16px;">
+          <div class="card-title"><i class="fa-solid fa-bottle-water" style="color:var(--cyan)"></i> Şişe Seçimi <span style="font-size:10px;color:var(--text3);font-weight:400;text-transform:none;letter-spacing:0;">(birden fazla seçilebilir)</span></div>
+          <div class="bottle-grid">
+            <div class="bottle-opt" id="bo-5l" onclick="toggleBottle('5l')">
+              <span class="bo-check" id="bc-5l"></span>
+              <span class="bo-emoji">🫙</span>
+              <div class="bo-name">5L Boş Şişe</div>
+              <div class="bo-price" id="bp-5l">0 ₴</div>
+              <div class="bo-stock" id="bst-5l">Stok: — adet</div>
+              <input type="checkbox" id="chk-5l">
+            </div>
+            <div class="bottle-opt" id="bo-10l" onclick="toggleBottle('10l')">
+              <span class="bo-check" id="bc-10l"></span>
+              <span class="bo-emoji">🧴</span>
+              <div class="bo-name">10L Boş Şişe</div>
+              <div class="bo-price" id="bp-10l">0 ₴</div>
+              <div class="bo-stock" id="bst-10l">Stok: — adet</div>
+              <input type="checkbox" id="chk-10l">
+            </div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-bottom:16px;">
+          <div class="card-title"><i class="fa-solid fa-wallet" style="color:var(--green)"></i> Ödeme Yöntemi</div>
+          <div class="pay-grid">
+            <div class="pay-opt sel-cash" id="pay-cash" onclick="selectPay('cash')">
+              <div class="pay-icon cash"><i class="fa-solid fa-money-bills"></i></div>
+              <div>
+                <div class="pay-label">Nakit</div>
+                <div class="pay-sub">Elden ödeme</div>
+              </div>
+            </div>
+            <div class="pay-opt" id="pay-card" onclick="selectPay('card')">
+              <div class="pay-icon card"><i class="fa-solid fa-credit-card"></i></div>
+              <div>
+                <div class="pay-label">Kart</div>
+                <div class="pay-sub">Banka/kredi kartı</div>
+              </div>
+            </div>
+          </div>
+          <input type="hidden" id="pay-method" value="cash">
+        </div>
+
+        <div class="card" style="margin-bottom:16px;">
+          <div class="sale-summary">
+            <div class="ss-row">
+              <span>Su Bedeli</span>
+              <span id="ss-water" style="font-weight:600;">0 ₴</span>
+            </div>
+            <div class="ss-row">
+              <span>Şişe Bedeli</span>
+              <span id="ss-bottle" style="font-weight:600;">0 ₴</span>
+            </div>
+            <div class="ss-row">
+              <span>Ödeme Yöntemi</span>
+              <span id="ss-pay" style="font-weight:600;"><span class="badge b-green">NAKİT</span></span>
+            </div>
+            <div class="ss-total-row">
+              <span class="ss-total-label">TOPLAM</span>
+              <span class="ss-total-val" id="ss-total">0 ₴</span>
+            </div>
+          </div>
+          <button class="btn btn-primary btn-full" onclick="processSale()">
+            <i class="fa-solid fa-check-circle"></i> SATIŞI KAYDET
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════ EXPENSES PAGE ══════════════════════ -->
+    <div class="page" id="page-expenses">
+      <div style="max-width:560px;">
+        <div class="card">
+          <div class="card-title"><i class="fa-solid fa-receipt" style="color:var(--red)"></i> Yeni Gider</div>
+          <div class="form-group">
+            <label class="form-label">Kategori</label>
+            <select id="exp-cat" class="form-input">
+              <option value="Elektrik">⚡ Elektrik Faturası</option>
+              <option value="Su Alımı">💧 Su Alımı / Temin</option>
+              <option value="Filtre">🔧 Filtre / Bakım</option>
+              <option value="Kira">🏠 Kira</option>
+              <option value="Personel">👤 Personel Gideri</option>
+              <option value="Araç">🚛 Araç / Yakıt</option>
+              <option value="Diğer">📦 Diğer</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Açıklama</label>
+            <input type="text" id="exp-desc" class="form-input" placeholder="Gider detayı...">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Tutar (₴)</label>
+            <input type="number" id="exp-amount" class="form-input" placeholder="0.00">
+          </div>
+          <button class="btn btn-full btn-red" onclick="addExpense()">
+            <i class="fa-solid fa-minus-circle"></i> GİDERİ KAYDET
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════ STOCK PAGE ══════════════════════ -->
+    <div class="page" id="page-stock">
+      <div class="inner-tabs">
+        <button class="itab active" onclick="stockTab('add',this)">➕ Stok Ekle</button>
+        <button class="itab" onclick="stockTab('remove',this)">➖ Stok Çıkar</button>
+        <button class="itab" onclick="stockTab('set',this)">✏️ Düzenle</button>
+        <button class="itab" onclick="stockTab('log',this)">📋 Hareketler</button>
+      </div>
+
+      <!-- ADD -->
+      <div class="inner-sec active" id="ist-add">
+        <div class="g3">
+          <div class="card">
+            <div class="card-title"><i class="fa-solid fa-droplet" style="color:var(--cyan)"></i> Su Tankı</div>
+            <div style="text-align:center;padding:10px 0 16px;">
+              <div style="font-size:40px;margin-bottom:6px;">💧</div>
+              <div style="font-family:'JetBrains Mono',monospace;font-size:28px;font-weight:700;color:var(--cyan);" id="sw-water">0 L</div>
+              <div style="font-size:12px;color:var(--text3);margin-top:4px;">Mevcut stok</div>
+              <div class="pb-wrap" style="margin-top:12px;height:8px;"><div class="pb-fill" id="pb-water" style="background:var(--cyan);width:0%"></div></div>
+            </div>
+            <div class="inp-row">
+              <input type="number" id="a-water" class="form-input" placeholder="Eklenecek litre">
+              <button class="btn btn-green btn-sm" onclick="stockAdd('water')"><i class="fa-solid fa-plus"></i></button>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title"><i class="fa-solid fa-bottle-water" style="color:var(--brand)"></i> 5L Boş Şişe</div>
+            <div style="text-align:center;padding:10px 0 16px;">
+              <div style="font-size:40px;margin-bottom:6px;">🫙</div>
+              <div style="font-family:'JetBrains Mono',monospace;font-size:28px;font-weight:700;color:var(--brand);" id="sw-b5">0</div>
+              <div style="font-size:12px;color:var(--text3);margin-top:4px;">Adet</div>
+              <div class="pb-wrap" style="margin-top:12px;height:8px;"><div class="pb-fill" id="pb-b5" style="background:var(--brand);width:0%"></div></div>
+            </div>
+            <div class="inp-row">
+              <input type="number" id="a-5l" class="form-input" placeholder="Eklenecek adet">
+              <button class="btn btn-green btn-sm" onclick="stockAdd('5l')"><i class="fa-solid fa-plus"></i></button>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title"><i class="fa-solid fa-bottle-water" style="color:var(--purple)"></i> 10L Boş Şişe</div>
+            <div style="text-align:center;padding:10px 0 16px;">
+              <div style="font-size:40px;margin-bottom:6px;">🧴</div>
+              <div style="font-family:'JetBrains Mono',monospace;font-size:28px;font-weight:700;color:var(--purple);" id="sw-b10">0</div>
+              <div style="font-size:12px;color:var(--text3);margin-top:4px;">Adet</div>
+              <div class="pb-wrap" style="margin-top:12px;height:8px;"><div class="pb-fill" id="pb-b10" style="background:var(--purple);width:0%"></div></div>
+            </div>
+            <div class="inp-row">
+              <input type="number" id="a-10l" class="form-input" placeholder="Eklenecek adet">
+              <button class="btn btn-green btn-sm" onclick="stockAdd('10l')"><i class="fa-solid fa-plus"></i></button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- REMOVE -->
+      <div class="inner-sec" id="ist-remove">
+        <div style="max-width:480px;">
+          <div class="card">
+            <div class="card-title"><i class="fa-solid fa-minus-circle" style="color:var(--red)"></i> Stoktan Çıkar</div>
+            <div class="form-group">
+              <label class="form-label">Stok Türü</label>
+              <select id="rm-type" class="form-input">
+                <option value="water">💧 Su (Litre)</option>
+                <option value="5l">🫙 5L Boş Şişe (Adet)</option>
+                <option value="10l">🧴 10L Boş Şişe (Adet)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Çıkarılacak Miktar</label>
+              <input type="number" id="rm-amount" class="form-input" placeholder="Miktar...">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Açıklama</label>
+              <input type="text" id="rm-desc" class="form-input" placeholder="Sebep / not... (isteğe bağlı)">
+            </div>
+            <button class="btn btn-red btn-full" onclick="stockRemove()">
+              <i class="fa-solid fa-trash"></i> STOKTAN ÇIKAR
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- SET -->
+      <div class="inner-sec" id="ist-set">
+        <div style="max-width:480px;">
+          <div class="card">
+            <div class="card-title"><i class="fa-solid fa-pen-to-square" style="color:var(--orange)"></i> Miktarı Düzenle</div>
+            <p style="font-size:13px;color:var(--text2);margin-bottom:20px;line-height:1.6;">Stok miktarını doğrudan belirli bir değere ayarlar. Mevcut değer silinir ve yeni değer atanır.</p>
+            <div class="form-group">
+              <label class="form-label">Su Stoku (Litre)</label>
+              <div class="inp-row">
+                <input type="number" id="set-water" class="form-input" placeholder="Yeni değer...">
+                <button class="btn btn-orange btn-sm" onclick="stockSet('water')"><i class="fa-solid fa-floppy-disk"></i> Kaydet</button>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">5L Şişe (Adet)</label>
+              <div class="inp-row">
+                <input type="number" id="set-5l" class="form-input" placeholder="Yeni değer...">
+                <button class="btn btn-orange btn-sm" onclick="stockSet('5l')"><i class="fa-solid fa-floppy-disk"></i> Kaydet</button>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">10L Şişe (Adet)</label>
+              <div class="inp-row">
+                <input type="number" id="set-10l" class="form-input" placeholder="Yeni değer...">
+                <button class="btn btn-orange btn-sm" onclick="stockSet('10l')"><i class="fa-solid fa-floppy-disk"></i> Kaydet</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- LOG -->
+      <div class="inner-sec" id="ist-log">
+        <div class="card">
+          <div class="card-title"><i class="fa-solid fa-list-check" style="color:var(--brand)"></i> Stok Hareketleri</div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Tarih</th><th>İşlem</th><th>Tür</th><th>Maliyet</th></tr></thead>
+              <tbody id="stock-log-tbody"></tbody>
+            </table>
+          </div>
+          <div id="stock-log-empty" class="empty" style="display:none;"><i class="fa-solid fa-box-open"></i><p>Stok hareketi yok</p></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════ REPORTS PAGE ══════════════════════ -->
+    <div class="page" id="page-reports">
+
+      <!-- DATE RANGE FILTER -->
+      <div class="dr-row">
+        <button class="dr-pill active" onclick="setReportPeriod('day',this)">📅 Bugün</button>
+        <button class="dr-pill" onclick="setReportPeriod('week',this)">📆 Bu Hafta</button>
+        <button class="dr-pill" onclick="setReportPeriod('month',this)">🗓️ Bu Ay</button>
+        <button class="dr-pill" onclick="setReportPeriod('all',this)">🔄 Tümü</button>
+      </div>
+
+      <!-- REPORT STATS -->
+      <div class="g4" style="margin-bottom:20px;">
+        <div class="stat-card sc-green" style="padding:16px;">
+          <div class="stat-icon-bg" style="width:36px;height:36px;border-radius:10px;font-size:15px;margin-bottom:10px;"><i class="fa-solid fa-money-bill-trend-up"></i></div>
+          <div class="stat-label">Toplam Gelir</div>
+          <div class="stat-val" id="rp-income" style="font-size:22px;">0 ₴</div>
+        </div>
+        <div class="stat-card sc-red" style="padding:16px;">
+          <div class="stat-icon-bg" style="width:36px;height:36px;border-radius:10px;font-size:15px;margin-bottom:10px;"><i class="fa-solid fa-arrow-down"></i></div>
+          <div class="stat-label">Toplam Gider</div>
+          <div class="stat-val" id="rp-expense" style="font-size:22px;">0 ₴</div>
+        </div>
+        <div class="stat-card sc-blue" style="padding:16px;">
+          <div class="stat-icon-bg" style="width:36px;height:36px;border-radius:10px;font-size:15px;margin-bottom:10px;"><i class="fa-solid fa-scale-balanced"></i></div>
+          <div class="stat-label">Net Kar</div>
+          <div class="stat-val" id="rp-profit" style="font-size:22px;">0 ₴</div>
+        </div>
+        <div class="stat-card sc-cyan" style="padding:16px;">
+          <div class="stat-icon-bg" style="width:36px;height:36px;border-radius:10px;font-size:15px;margin-bottom:10px;"><i class="fa-solid fa-droplet"></i></div>
+          <div class="stat-label">Satılan Su</div>
+          <div class="stat-val" id="rp-liters" style="font-size:22px;">0 L</div>
+        </div>
+      </div>
+
+      <!-- CHARTS -->
+      <div class="g2" style="margin-bottom:20px;">
+        <div class="card">
+          <div class="card-title"><i class="fa-solid fa-chart-area" style="color:var(--brand)"></i> Gelir/Gider Grafiği</div>
+          <div class="chart-box" style="height:220px;"><canvas id="rp-chart-main"></canvas></div>
+        </div>
+        <div class="card">
+          <div class="card-title"><i class="fa-solid fa-chart-pie" style="color:var(--purple)"></i> Kategori Dağılımı</div>
+          <div class="chart-box" style="height:220px;"><canvas id="rp-chart-cat"></canvas></div>
+        </div>
+      </div>
+
+      <!-- EXTRA STATS -->
+      <div class="g4" style="margin-bottom:20px;">
+        <div class="card card-sm">
+          <div class="card-title">Nakit Satış</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:700;color:var(--green);" id="rp-cash-total">0 ₴</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:4px;" id="rp-cash-count">0 işlem</div>
+        </div>
+        <div class="card card-sm">
+          <div class="card-title">Kart Satış</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:700;color:var(--purple);" id="rp-card-total">0 ₴</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:4px;" id="rp-card-count">0 işlem</div>
+        </div>
+        <div class="card card-sm">
+          <div class="card-title">Ortalama Satış</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:700;color:var(--orange);" id="rp-avg">0 ₴</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:4px;">işlem başına</div>
+        </div>
+        <div class="card card-sm">
+          <div class="card-title">İşlem Sayısı</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:700;color:var(--brand);" id="rp-count">0</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:4px;">toplam kayıt</div>
+        </div>
+      </div>
+
+      <!-- FULL HISTORY TABLE -->
+      <div class="card">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
+          <div class="card-title" style="margin-bottom:0;"><i class="fa-solid fa-table-list" style="color:var(--brand)"></i> Tüm Hareketler</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <input type="text" id="tx-search" class="form-input" placeholder="Ara..." style="width:160px;padding:8px 12px;font-size:12px;" oninput="renderHistory()">
+            <select id="tx-filter" class="form-input" style="width:auto;padding:8px 12px;font-size:12px;" onchange="renderHistory()">
+              <option value="all">Tümü</option>
+              <option value="sale">Satışlar</option>
+              <option value="expense">Giderler</option>
+              <option value="stock">Stok</option>
+            </select>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Tarih & Saat</th>
+                <th>Tür</th>
+                <th>Kategori</th>
+                <th>Açıklama</th>
+                <th>Ödeme</th>
+                <th>Tutar</th>
+              </tr>
+            </thead>
+            <tbody id="history-tbody"></tbody>
+          </table>
+        </div>
+        <div id="history-empty" class="empty" style="display:none;"><i class="fa-regular fa-folder-open"></i><p>Sonuç bulunamadı</p></div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════ SETTINGS PAGE ══════════════════════ -->
+    <div class="page" id="page-settings">
+      <div class="g2">
+        <div>
+          <div class="card" style="margin-bottom:16px;">
+            <div class="card-title"><i class="fa-solid fa-tag" style="color:var(--brand)"></i> Fiyatlandırma</div>
+
+            <div class="form-group">
+              <label class="form-label">💧 Litre Başı Satış Fiyatı (₴)</label>
+              <input type="number" id="cfg-pl" class="form-input" step="0.1">
+            </div>
+            <div class="divider" style="margin:12px 0;"></div>
+            <div style="font-size:12px;color:var(--text2);font-weight:700;margin-bottom:12px;text-transform:uppercase;letter-spacing:.06em;">🫙 5L Boş Şişe</div>
+            <div class="g2" style="gap:10px;">
+              <div class="form-group" style="margin-bottom:0">
+                <label class="form-label">Alış (₴)</label>
+                <input type="number" id="cfg-5c" class="form-input" step="0.1">
+              </div>
+              <div class="form-group" style="margin-bottom:0">
+                <label class="form-label">Satış (₴)</label>
+                <input type="number" id="cfg-5p" class="form-input" step="0.1">
+              </div>
+            </div>
+            <div class="divider" style="margin:12px 0;"></div>
+            <div style="font-size:12px;color:var(--text2);font-weight:700;margin-bottom:12px;text-transform:uppercase;letter-spacing:.06em;">🧴 10L Boş Şişe</div>
+            <div class="g2" style="gap:10px;">
+              <div class="form-group" style="margin-bottom:0">
+                <label class="form-label">Alış (₴)</label>
+                <input type="number" id="cfg-10c" class="form-input" step="0.1">
+              </div>
+              <div class="form-group" style="margin-bottom:0">
+                <label class="form-label">Satış (₴)</label>
+                <input type="number" id="cfg-10p" class="form-input" step="0.1">
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-title"><i class="fa-solid fa-triangle-exclamation" style="color:var(--orange)"></i> Düşük Stok Uyarı Eşikleri</div>
+            <div class="g3" style="gap:10px;">
+              <div class="form-group" style="margin-bottom:0">
+                <label class="form-label">Su (L)</label>
+                <input type="number" id="cfg-aw" class="form-input">
+              </div>
+              <div class="form-group" style="margin-bottom:0">
+                <label class="form-label">5L Şişe</label>
+                <input type="number" id="cfg-a5">
+              </div>
+              <div class="form-group" style="margin-bottom:0">
+                <label class="form-label">10L Şişe</label>
+                <input type="number" id="cfg-a10" class="form-input">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="card" style="margin-bottom:16px;">
+            <div class="card-title"><i class="fa-solid fa-palette" style="color:var(--purple)"></i> Görünüm</div>
+            <div class="info-row">
+              <span class="ir-key">Tema</span>
+              <button class="btn btn-ghost btn-sm" onclick="toggleTheme()" id="theme-toggle-btn">
+                <i class="fa-solid fa-sun"></i> Açık Temaya Geç
+              </button>
+            </div>
+            <div class="info-row">
+              <span class="ir-key">Versiyon</span>
+              <span class="ir-val" style="color:var(--text3);">v2.0 Pro</span>
+            </div>
+          </div>
+
+          <div class="card" style="margin-bottom:16px;">
+            <div class="card-title"><i class="fa-solid fa-database" style="color:var(--brand)"></i> Veri Yönetimi</div>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;">
+              <button class="btn btn-ghost btn-sm" onclick="exportData()"><i class="fa-solid fa-file-export"></i> JSON İndir</button>
+              <button class="btn btn-ghost btn-sm" onclick="document.getElementById('imp-file').click()"><i class="fa-solid fa-file-import"></i> JSON Yükle</button>
+              <input type="file" id="imp-file" accept=".json" style="display:none" onchange="importData(event)">
+            </div>
+          </div>
+
+          <div class="danger-zone">
+            <div class="dz-title"><i class="fa-solid fa-skull-crossbones"></i> Tehlikeli Bölge</div>
+            <div class="dz-desc">Bu işlemler geri alınamaz. Lütfen dikkatli olun.</div>
+            <div class="dz-btns">
+              <button class="btn btn-red btn-sm" onclick="confirm2('clearTx','İşlemleri Sil','Tüm satış, gider ve stok kayıtları silinecek. Devam?','🗑️')">
+                <i class="fa-solid fa-trash-can"></i> İşlemleri Sil
+              </button>
+              <button class="btn btn-red btn-sm" onclick="confirm2('resetStock','Stoku Sıfırla','Tüm stok miktarları sıfırlanacak.','📦')">
+                <i class="fa-solid fa-rotate-left"></i> Stoku Sıfırla
+              </button>
+              <button class="btn btn-red btn-sm" onclick="confirm2('resetAll','HER ŞEYİ SİL','Tüm veriler ve ayarlar silinecek, uygulama sıfırlanacak. KESİNLİKLE GERİ ALINAMAZ!','💀')">
+                <i class="fa-solid fa-bomb"></i> Tümünü Sıfırla
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top:16px;">
+        <button class="btn btn-primary" onclick="saveSettings()">
+          <i class="fa-solid fa-floppy-disk"></i> AYARLARI KAYDET
+        </button>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /main-area -->
+</div><!-- /app-shell -->
+
+<!-- MOBILE NAV -->
+<nav class="mob-nav">
+  <div class="mob-nav-inner">
+    <button class="mob-nav-btn active" id="mnav-dashboard" onclick="goPage('dashboard')"><i class="fa-solid fa-chart-line"></i>Panel</button>
+    <button class="mob-nav-btn" id="mnav-sales" onclick="goPage('sales')"><i class="fa-solid fa-cash-register"></i>Satış</button>
+    <button class="mob-nav-btn" id="mnav-expenses" onclick="goPage('expenses')"><i class="fa-solid fa-receipt"></i>Gider</button>
+    <button class="mob-nav-btn" id="mnav-stock" onclick="goPage('stock')"><i class="fa-solid fa-boxes-stacked"></i>Stok</button>
+    <button class="mob-nav-btn" id="mnav-reports" onclick="goPage('reports')"><i class="fa-solid fa-chart-bar"></i>Rapor</button>
+    <button class="mob-nav-btn" id="mnav-settings" onclick="goPage('settings')"><i class="fa-solid fa-sliders"></i>Ayar</button>
+  </div>
+</nav>
+
+<script>
+/* ═══════════════════════════════════════════════════
+   DATA
+═══════════════════════════════════════════════════ */
+const KEY = 'kievsu_pro_v3';
+let db = JSON.parse(localStorage.getItem(KEY)) || {
+  settings: { priceLiter: 5, b5Cost: 10, b5Price: 20, b10Cost: 15, b10Price: 30, alertW: 100, alert5: 5, alert10: 5 },
+  stock: { water: 1000, b5: 50, b10: 50 },
+  transactions: []
+};
+
+function save() { localStorage.setItem(KEY, JSON.stringify(db)); }
+
+/* ═══════════════════════════════════════════════════
+   CHARTS
+═══════════════════════════════════════════════════ */
+let charts = {};
+const isDark = () => document.documentElement.getAttribute('data-theme') === 'dark';
+const gc = (alpha) => isDark() ? `rgba(148,163,184,${alpha})` : `rgba(71,85,105,${alpha})`;
+
+Chart.defaults.font.family = 'Outfit';
+Chart.defaults.color = '#64748b';
+
+function initCharts() {
+  const cfg = {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false }, tooltip: { callbacks: {} } },
+    scales: {
+      x: { grid: { color: isDark() ? 'rgba(148,163,184,.06)' : 'rgba(0,0,0,.05)' }, ticks: { color: isDark() ? '#475569' : '#94a3b8', font: { size: 11 } } },
+      y: { beginAtZero: true, grid: { color: isDark() ? 'rgba(148,163,184,.06)' : 'rgba(0,0,0,.05)' }, ticks: { color: isDark() ? '#475569' : '#94a3b8', font: { size: 11 } } }
+    }
+  };
+
+  // TREND
+  charts.trend = new Chart(document.getElementById('chart-trend'), {
+    type: 'line',
+    data: { labels: [], datasets: [{ label: 'Satış (₴)', data: [], borderColor: '#0ea5e9', backgroundColor: 'rgba(14,165,233,.08)', fill: true, tension: .4, pointRadius: 4, pointBackgroundColor: '#0ea5e9' }] },
+    options: { ...JSON.parse(JSON.stringify(cfg)), plugins: { legend: { display: false } } }
+  });
+
+  // PIE
+  charts.pie = new Chart(document.getElementById('chart-pie'), {
+    type: 'doughnut',
+    data: { labels: ['Gelir','Gider'], datasets: [{ data: [0,0], backgroundColor: ['#10b981','#ef4444'], borderWidth: 0, hoverOffset: 6 }] },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: true, position: 'bottom', labels: { color: isDark() ? '#94a3b8' : '#64748b', font: { size: 12 } } } }, cutout: '60%' }
+  });
+
+  // PAYMENT
+  charts.pay = new Chart(document.getElementById('chart-payment'), {
+    type: 'doughnut',
+    data: { labels: ['Nakit','Kart'], datasets: [{ data: [0,0], backgroundColor: ['#10b981','#8b5cf6'], borderWidth: 0, hoverOffset: 6 }] },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: true, position: 'bottom', labels: { color: isDark() ? '#94a3b8' : '#64748b', font: { size: 12 } } } }, cutout: '55%' }
+  });
+
+  // BAR
+  charts.bar = new Chart(document.getElementById('chart-bar'), {
+    type: 'bar',
+    data: { labels: [], datasets: [{ label: 'Gelir', data: [], backgroundColor: 'rgba(14,165,233,.7)', borderRadius: 6 }, { label: 'Gider', data: [], backgroundColor: 'rgba(239,68,68,.6)', borderRadius: 6 }] },
+    options: { ...JSON.parse(JSON.stringify(cfg)), plugins: { legend: { display: true, labels: { color: isDark() ? '#94a3b8' : '#64748b', font: { size: 11 } } } } }
+  });
+
+  // REPORT MAIN
+  charts.rpMain = new Chart(document.getElementById('rp-chart-main'), {
+    type: 'line',
+    data: { labels: [], datasets: [
+      { label: 'Gelir', data: [], borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,.07)', fill: true, tension: .4, pointRadius: 3 },
+      { label: 'Gider', data: [], borderColor: '#ef4444', backgroundColor: 'rgba(239,68,68,.07)', fill: true, tension: .4, pointRadius: 3 }
+    ]},
+    options: { ...JSON.parse(JSON.stringify(cfg)), plugins: { legend: { display: true, labels: { color: isDark() ? '#94a3b8' : '#64748b', font: { size: 11 } } } } }
+  });
+
+  // REPORT CAT
+  charts.rpCat = new Chart(document.getElementById('rp-chart-cat'), {
+    type: 'doughnut',
+    data: { labels: [], datasets: [{ data: [], backgroundColor: ['#0ea5e9','#10b981','#8b5cf6','#f59e0b','#ef4444','#06b6d4','#6366f1'], borderWidth: 0, hoverOffset: 6 }] },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: true, position: 'right', labels: { color: isDark() ? '#94a3b8' : '#64748b', font: { size: 11 } } } }, cutout: '55%' }
+  });
+
+  updateCharts();
+}
+
+function updateCharts() {
+  const period = window._dashPeriod || 'day';
+  const txs = filterByPeriod(db.transactions, period);
+
+  // Trend (7 noktaya kadar)
+  let trendDays;
+  if (period === 'day') {
+    trendDays = [...Array(24)].map((_,i) => {
+      const d = new Date(); d.setHours(d.getHours() - i, 0, 0, 0);
+      return d;
+    }).reverse();
+  } else if (period === 'week') {
+    trendDays = [...Array(7)].map((_,i) => { const d = new Date(); d.setDate(d.getDate()-i); ret
